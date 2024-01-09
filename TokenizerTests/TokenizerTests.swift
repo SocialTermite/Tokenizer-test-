@@ -10,27 +10,59 @@ import XCTest
 
 final class TokenizerTests: XCTestCase {
 
-    override func setUpWithError() throws {
-        // Put setup code here. This method is called before the invocation of each test method in the class.
-    }
 
-    override func tearDownWithError() throws {
-        // Put teardown code here. This method is called after the invocation of each test method in the class.
+    func testFakeSeparators() throws {
+        let string = "Hello sdo aasiudfb asdfiuasdbg addn afdsnx fa f a rr and asd andddae asjdhj if asd,  jsifjosa, ifo ofi sdif ."
+        let stateMachine = TokenizeStateMachine()
+        let result = stateMachine.process(string: string, separators: ["if", "and"])
+        
+        XCTAssertEqual(result.count, 2)
+        
+        XCTAssertEqual(result[0], .init(leadingWords: ["Hello","sdo","aasiudfb","asdfiuasdbg",
+                                                       "addn","afdsnx","fa","f","a","rr"],
+                                        separator: "and",
+                                        trailingWords: ["asd", "andddae", "asjdhj"]))
+        
+        XCTAssertEqual(result[1], .init(leadingWords: ["asd", "andddae", "asjdhj"],
+                                        separator: "if",
+                                        trailingWords: ["asd,", "jsifjosa,", "ifo", "ofi", "sdif", "."]))
+        
     }
-
-    func testExample() throws {
-        // This is an example of a functional test case.
-        // Use XCTAssert and related functions to verify your tests produce the correct results.
-        // Any test you write for XCTest can be annotated as throws and async.
-        // Mark your test throws to produce an unexpected failure when your test encounters an uncaught error.
-        // Mark your test async to allow awaiting for asynchronous code to complete. Check the results with assertions afterwards.
+    
+    func testEmptyString() {
+        let stateMachine = TokenizeStateMachine()
+        let result = stateMachine.process(string: "", separators: ["if", "and"])
+        
+        XCTAssertTrue(result.isEmpty)
     }
-
-    func testPerformanceExample() throws {
-        // This is an example of a performance test case.
-        self.measure {
-            // Put the code you want to measure the time of here.
-        }
+    
+    func testNoSeparatorsInString() {
+        let string = "Hello sdo aasiudfb asdfiuasdbg addn afdsnx fa f a rr and asd andddae asjdhj if asd,  jsifjosa, ifo ofi sdif ."
+        let stateMachine = TokenizeStateMachine()
+        let result = stateMachine.process(string: string, separators: ["ifd"])
+        
+        XCTAssertFalse(result.isEmpty)
+        XCTAssertEqual(result[0], .init(leadingWords: ["Hello", "sdo", "aasiudfb", "asdfiuasdbg",
+                                                       "addn", "afdsnx", "fa", "f", "a", "rr",
+                                                       "and", "asd", "andddae", "asjdhj", "if",
+                                                       "asd,", "jsifjosa,", "ifo", "ofi",
+                                                       "sdif", "."],
+                                        separator: "",
+                                        trailingWords: []))
     }
-
+    
+    func testNoSeparators() {
+        let string = "Hello sdo aasiudfb asdfiuasdbg addn afdsnx fa f a rr and asd andddae asjdhj if asd,  jsifjosa, ifo ofi sdif ."
+        let stateMachine = TokenizeStateMachine()
+        let result = stateMachine.process(string: string, separators: [])
+        
+        XCTAssertTrue(result.isEmpty)
+    }
+    
+    func testEmptyAll() {
+        let stateMachine = TokenizeStateMachine()
+        let result = stateMachine.process(string: "", separators: [])
+        
+        XCTAssertTrue(result.isEmpty)
+    }
 }
